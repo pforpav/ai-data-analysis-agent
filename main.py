@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import pprint
 import numpy as np
 import matplotlib.pyplot as plt
 from streamlit import divider
@@ -19,38 +20,43 @@ st.title(":rainbow[**DataWhisperer**]")
 
 # Initialize chat history
 if 'messages' not in st.session_state:
-    st.session_state.messages = [
+    st.session_state['messages'] = [
         {"role": "assistant", "content": "Hello! I'm your DataWhisperer. Upload a CSV file on the sidebar, and I'll help you analyze it."}
     ]
 
+if 'df' not in st.session_state:
+    st.session_state['df'] = {}
+
+if "file_uploader_key" not in st.session_state:
+    st.session_state["file_uploader_key"] = 0
+
+if "uploaded_files" not in st.session_state:
+    st.session_state["uploaded_files"] = []
+
 # Display chat messages from history on app rerun
-for message in st.session_state.messages:
+for message in st.session_state['messages']:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
 # Accept user input
 if prompt := st.chat_input("What would you like to know?"):
     # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state['messages'].append({"role": "user", "content": prompt})
     # Display user message in chat message container
     with st.chat_message("user"):
         st.markdown(prompt)
-
-
-if 'df' not in st.session_state:
-    st.session_state.df = {}
 
 
 # Sidebar
 with st.sidebar:
 
     st.title("📄 Data Source")
-    path = st.file_uploader("Upload a CSV file to explore.", type=["csv"], accept_multiple_files=True)
+    path = st.file_uploader("Upload a CSV file to explore.", type=["csv"], accept_multiple_files=True, key=st.session_state["file_uploader_key"])
 
     if path is not None:
+        st.session_state["uploaded_files"] = path
         try:
             for i in range(len(path)):
-                print(i)
                 df = pd.read_csv(path[i])
                 st.session_state.df.update({path[i].name: df})
                 st.success(f"Successfully loaded {path[i].name}")
@@ -67,4 +73,13 @@ with st.sidebar:
             for col, dtype in st.session_state.df[key].dtypes.items():
                 st.write(f"- {col}: {dtype}")
 
-    # st.rerun()
+    if st.button("Clear uploaded files"):
+        st.session_state["file_uploader_key"] += 1
+        del st.session_state.df
+        st.rerun()
+
+if st.button("Clear Chat"):
+    del st.session_state['messages']
+    st.rerun()
+
+
