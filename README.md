@@ -15,7 +15,6 @@
 * [Project Structure](#project-structure)
 * [License](#license)
 * [Contact](#contact)
-* [Acknowledgments](#acknowledgments)
 
 ## About The Project
 
